@@ -5,7 +5,7 @@ export RELEASE_NAME=`basename $GITHUB_REPO`
 
 ## Create Release
    export RELEASE_URL=$(curl -H\
-  "Authorization: token $SECRET_TOKEN"\
+  "Authorization: token $GITHUB_TOKEN "\
    -d "{\"tag_name\": \"$VERSION\", \"target_commitsh\": \"$VERSION\", \"name\": \"$VERSION\", \"body\": \"Release $VERSION\" }"\
    -H "Content-Type: application/json"\
    -X POST\
@@ -34,4 +34,4 @@ function create_zip_file() {
 create_zip_file
 
 ### Post the release
-curl -X POST -H "Authorization: token $SECRET_TOKEN" --data-binary "@${RELEASE_NAME}.zip" -H "Content-type: application/octet-stream" $RELEASE_URL/assets?name=${RELEASE_NAME}.zip
+curl -X POST -H "Authorization: token $GITHUB_TOKEN " --data-binary "@${RELEASE_NAME}.zip" -H "Content-type: application/octet-stream" $RELEASE_URL/assets?name=${RELEASE_NAME}.zip
