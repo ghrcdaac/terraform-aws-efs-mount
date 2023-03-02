@@ -3,24 +3,20 @@ resource "random_id" "creation_token" {
   prefix      = "${var.name}-"
 }
 
-resource "aws_efs_file_system" "this" {
-  creation_token = random_id.creation_token.hex
-
+resource "aws_efs_file_system" "file_system" {
+  creation_token = var.creation_token
   encrypted  = var.encrypted
   kms_key_id = var.kms_key_id
-
-  tags = merge(
-    map("Name", var.name),
-    map("CreationToken", random_id.creation_token.hex),
-    map("terraform", "true"),
-    var.tags,
-  )
+  throughput_mode = var.throughput_mode
+  performance_mode = var.performance_mode
+  provisioned_throughput_in_mibps = var.provisioned_throughput_in_mibps
+  tags = var.tags
 }
 
-resource "aws_efs_mount_target" "this" {
+resource "aws_efs_mount_target" "mount_target" {
   count = length(var.subnets)
 
-  file_system_id  = aws_efs_file_system.this.id
+  file_system_id  = aws_efs_file_system.file_system.id
   subnet_id       = element(var.subnets, count.index)
   security_groups = [aws_security_group.mount_target.id]
 }
@@ -30,7 +26,7 @@ resource "aws_security_group" "mount_target_client" {
   description = "Allow traffic out to NFS for ${var.name}-mnt."
   vpc_id      = var.vpc_id
 
-  depends_on = [aws_efs_mount_target.this]
+  depends_on = [aws_efs_mount_target.mount_target]
 
   tags = merge(
     map("Name", "${var.name}-mount-target-client"),
